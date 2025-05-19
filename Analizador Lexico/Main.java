@@ -12,34 +12,44 @@ public class Main {
         String outputFile = args[1];
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-             PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
+     PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
 
-            AnalizadorLexico lexer = new AnalizadorLexico();
-            String line;
-            int lineNum = 1;
+    
+    StringBuilder contenido = new StringBuilder();
+    String linea;
+    int lineNum = 1;
+    while ((linea = reader.readLine()) != null) {
+        contenido.append(linea).append("\n");
+    }
 
-            while ((line = reader.readLine()) != null) {
-                List<Token> tokens = lexer.tokenize(line);
+ 
+    AnalizadorLexico lexer = new AnalizadorLexico();
+    List<Token> tokens = lexer.tokenize(contenido.toString());
 
-                boolean hasError = tokens.stream().anyMatch(t -> t.type == TokenType.ERROR);
-
-                if (hasError) {
-                    writer.println("Error léxico en línea " + lineNum);
-                } else {
-                    for (Token token : tokens) {
-                        if (token.type != TokenType.EOF)
-                            writer.print(token.type + " ");
-                    }
-                    writer.println();
-                }
-
-                lineNum++;
-            }
-
-            System.out.println("Análisis completado. Ver resultado en: " + outputFile);
-
-        } catch (IOException e) {
-            System.err.println("Error al leer/escribir archivo: " + e.getMessage());
+    
+    boolean tieneErrorLexico = false;
+    for (Token token : tokens) {
+        if (token.type == TokenType.ERROR) {
+            writer.println("Error léxico: " + token.lexeme);
+            tieneErrorLexico = true;
+        } else if (token.type != TokenType.EOF) {
+            writer.print(token.type + " ");
         }
     }
+    writer.println();
+
+    
+    if (!tieneErrorLexico) {
+        Parser parser = new Parser(tokens);
+        parser.parse();
+    } else {
+        System.err.println("Se encontraron errores léxicos. No se ejecutará el parser.");
+    }
+
+    System.out.println("Análisis completado. Ver resultado en: " + outputFile);
+}
+ catch (IOException e) {
+        System.err.println("Error al leer/escribir archivo: " + e.getMessage());
+    }
+}
 }
