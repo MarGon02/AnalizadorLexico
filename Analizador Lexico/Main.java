@@ -12,44 +12,44 @@ public class Main {
         String outputFile = args[1];
 
         try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-     PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
+             PrintWriter writer = new PrintWriter(new FileWriter(outputFile))) {
 
-    
-    StringBuilder contenido = new StringBuilder();
-    String linea;
-    int lineNum = 1;
-    while ((linea = reader.readLine()) != null) {
-        contenido.append(linea).append("\n");
-    }
+            StringBuilder contenido = new StringBuilder();
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                contenido.append(linea).append("\n");
+            }
 
- 
-    AnalizadorLexico lexer = new AnalizadorLexico();
-    List<Token> tokens = lexer.tokenize(contenido.toString());
+            AnalizadorLexico lexer = new AnalizadorLexico();
+            List<Token> tokens = lexer.tokenize(contenido.toString());
 
-    
-    boolean tieneErrorLexico = false;
-    for (Token token : tokens) {
-        if (token.type == TokenType.ERROR) {
-            writer.println("Error léxico: " + token.lexeme);
-            tieneErrorLexico = true;
-        } else if (token.type != TokenType.EOF) {
-            writer.print(token.type + " ");
+            boolean tieneErrorLexico = false;
+            for (Token token : tokens) {
+                if (token.type == TokenType.ERROR) {
+                    writer.println("Error léxico: " + token.lexeme);
+                    tieneErrorLexico = true;
+                } else if (token.type != TokenType.EOF) {
+                    writer.print(token.type + " ");
+                }
+            }
+            writer.println();
+
+            if (!tieneErrorLexico) {
+                Traductor traductor = new Traductor(tokens);
+                String xml = traductor.traducir();
+                if (!traductor.hayErrores()) {
+                    writer.println("\n--- Traducción a XML ---\n");
+                    writer.println(xml);
+                } else {
+                    writer.println("Se encontraron errores durante la traducción a XML.");
+                }
+            } else {
+                System.err.println("Se encontraron errores léxicos. No se ejecutará el parser ni la traducción.");
+            }
+
+            System.out.println("Análisis completado. Ver resultado en: " + outputFile);
+        } catch (IOException e) {
+            System.err.println("Error al leer/escribir archivo: " + e.getMessage());
         }
     }
-    writer.println();
-
-    
-    if (!tieneErrorLexico) {
-        Parser parser = new Parser(tokens);
-        parser.parse();
-    } else {
-        System.err.println("Se encontraron errores léxicos. No se ejecutará el parser.");
-    }
-
-    System.out.println("Análisis completado. Ver resultado en: " + outputFile);
-}
- catch (IOException e) {
-        System.err.println("Error al leer/escribir archivo: " + e.getMessage());
-    }
-}
 }
