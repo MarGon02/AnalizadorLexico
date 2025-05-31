@@ -29,7 +29,7 @@ public class Main {
                     writer.println("Error léxico: " + token.lexeme);
                     tieneErrorLexico = true;
                 } else if (token.type != TokenType.EOF) {
-                    writer.print(token.type + " ");
+                    
                 }
             }
             writer.println();
@@ -38,7 +38,6 @@ public class Main {
                 Traductor traductor = new Traductor(tokens);
                 String xml = traductor.traducir();
                 if (!traductor.hayErrores()) {
-                    writer.println("\n--- Traducción a XML ---\n");
                     writer.println(xml);
                 } else {
                     writer.println("Se encontraron errores durante la traducción a XML.");
